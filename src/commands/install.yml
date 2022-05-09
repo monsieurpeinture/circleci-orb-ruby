@@ -1,0 +1,15 @@
+description: "Install Ruby within a build. To be used in a Linux distro with Apt available."
+parameters:
+  version:
+    description: "Ruby version."
+    type: string
+steps:
+  - run:
+      name: "Install/Verify Ruby Version Manager."
+      command: << include(scripts/install-rvm.sh) >>
+
+  - run:
+      name: "Install Ruby v<< parameters.version >> via RVM"
+      environment:
+        PARAM_VERSION: << parameters.version >>
+      command: << include(scripts/install-ruby.sh) >>

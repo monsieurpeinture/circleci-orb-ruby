@@ -1,0 +1,41 @@
+description: "Test with RSpec. You have to add `gem 'rspec_junit_formatter'` to your Gemfile. Enable parallelism on CircleCI for faster testing."
+parameters:
+    include:
+        default: "spec/**/*_spec.rb"
+        description: >
+            Glob to define where your test files are kept within your repository.
+            Should multiple globs be required, they must be passed in a comma separated string (e.g.: "spec/**/*_spec.rb,spec2/**/*_spec.rb").
+        type: string
+    label:
+        default: "RSpec Tests"
+        description: "Task label"
+        type: string
+    out-path:
+        default: "/tmp/test-results/rspec"
+        description: Where to save the rspec.xml file. Will automatically be saved to test_results and artifacts on CircleCI.
+        type: string
+    app-dir:
+        description: >
+            Path to the directory containing your Gemfile file. Not needed if Gemfile lives in the root.
+        default: .
+        type: string
+    order:
+        default: "defined"
+        description: >
+            Use the order parameter to tell RSpec how to order the files, groups, and examples.
+            Available options can be found at: https://relishapp.com/rspec/rspec-core/docs/command-line/order
+        type: string
+steps:
+    - run:
+        name: <<parameters.label>>
+        environment:
+            PARAM_OUT_PATH: <<parameters.out-path>>
+            PARAM_INCLUDE: <<parameters.include>>
+            PARAM_ORDER: <<parameters.order>>
+        command: <<include(scripts/rspec-test.sh)>>
+        working_directory: <<parameters.app-dir>>
+    - store_test_results:
+        path: <<parameters.out-path>>
+    - store_artifacts:
+        path: <<parameters.out-path>>
+        destination: test-results
