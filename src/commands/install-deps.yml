@@ -1,0 +1,49 @@
+description: "Install gems with Bundler."
+parameters:
+  with-cache:
+    type: boolean
+    default: true
+    description: Enable automatic caching of your gemfile dependencies for increased speed.
+  key:
+    description: "The cache key to use. The key is immutable."
+    type: string
+    default: "gems-v1"
+  path:
+    description: >
+      Installation path.
+      By default, it will run bundle with `--deployment` flag and installs gems to the vendor/bundle directory.
+    default: "./vendor/bundle"
+    type: string
+  bundler-version:
+    description: >
+      Configure which version of bundler to install and utilize.
+      By default, it gets the bundler version from Gemfile.lock, but if it is not working use this to override.
+    default: ""
+    type: string
+  app-dir:
+    description: >
+      Path to the directory containing your Gemfile file. Not needed if Gemfile lives in the root.
+    default: .
+    type: string
+steps:
+  - when:
+      condition: <<parameters.with-cache>>
+      steps:
+        - restore_cache:
+            keys:
+              - << parameters.key >>-{{ checksum "<<parameters.app-dir>>/Gemfile.lock"  }}
+              - << parameters.key >>
+  - run:
+      name: Bundle Install <<^parameters.with-cache>>(No Cache)<</parameters.with-cache>>
+      working_directory: <<parameters.app-dir>>
+      environment:
+        PARAM_PATH: << parameters.path >>
+        PARAM_BUNDLER_VERSION: << parameters.bundler-version >>
+      command: << include(scripts/install-deps.sh) >>
+  - when:
+      condition: <<parameters.with-cache>>
+      steps:
+        - save_cache:
+            key: << parameters.key >>-{{ checksum "<<parameters.app-dir>>/Gemfile.lock"  }}
+            paths:
+              - <<parameters.app-dir>>/<< parameters.path >>

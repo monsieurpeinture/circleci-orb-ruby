@@ -1,0 +1,37 @@
+description: "Check the code by Rubocop. You have to add `gem 'rubocop'` to your Gemfile. Enable parallelism on CircleCI for faster checking."
+parameters:
+  label:
+    default: "Rubocop Checks"
+    description: "Task label"
+    type: string
+  format:
+    description: "Customize the formatter for rubocop https://docs.rubocop.org/rubocop/0.88/formatters.html"
+    default: "progress"
+    type: string
+  check-path:
+    default: "."
+    type: string
+  out-path:
+    description: "Customize the directory of output file"
+    default: "/tmp/rubocop-results"
+    type: string
+  app-dir:
+    description: >
+      Path to the directory containing your Gemfile file. Not needed if Gemfile lives in the root.
+    default: .
+    type: string
+  parallel:
+    description: >
+      Use available CPUs to execute inspection in parallel.
+    default: false
+    type: boolean
+steps:
+  - run:
+      name: <<parameters.label>>
+      environment:
+        PARAM_OUT_PATH: <<parameters.out-path>>
+        PARAM_CHECK_PATH: <<parameters.check-path>>
+        PARAM_FORMAT: <<parameters.format>>
+        PARAM_PARALLEL: <<parameters.parallel>>
+      command: <<include(scripts/rubocop-check.sh)>>
+      working_directory: <<parameters.app-dir>>
